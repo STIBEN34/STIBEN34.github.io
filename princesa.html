@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>¿amor podrias perdonar a este que se duerme de la nada?</title>
+    <style>
+        body, html {
+            height: 100%;
+            margin: 0;
+            overflow: hidden;
+        }
+        #bg-canvas {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 0;
+            background: black;
+        }
+        .card {
+            position: relative;
+            z-index: 1;
+            background: rgba(255, 255, 255, 0); /* Cambiado a más transparente */
+            padding: 2rem 3rem;
+            border-radius: 20px;
+            box-shadow: 0 8px 24px rgba(67, 198, 172, 0.2);
+            text-align: center;
+            margin: auto;
+            top: 15vh;
+        }
+        h1 {
+            color: #43c6ac;
+            margin-bottom: 1rem;
+        }
+        .btn-group {
+            margin-top: 2rem;
+        }
+        button {
+            background: #43c6ac;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            padding: 0.8rem 2rem;
+            margin: 0 1rem;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        button:hover {
+            background: #f8ffae;
+            color: #43c6ac;
+        }
+        .respuesta {
+            margin-top: 2rem;
+            font-size: 1.3rem;
+            color: #ff6f61;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="bg-canvas"></canvas>
+    <div class="card">
+        <h1>¿Me perdonas?</h1>
+        <div class="btn-group">
+            <button onclick="mostrarRespuesta('¡o sea que si me quieres todavia un poquito! ')">Sí</button>
+            <button onclick="mostrarRespuesta('osea que ya no me quieres ni un poquito? 😔')">No</button>
+        </div>
+        <div class="respuesta" id="respuesta"></div>
+    </div>
+    <script>
+        function mostrarRespuesta(mensaje) {
+            document.getElementById('respuesta').textContent = mensaje;
+        }
+
+        // 3D Galaxy & Stars background
+        const canvas = document.getElementById('bg-canvas');
+        const ctx = canvas.getContext('2d');
+        let w = window.innerWidth;
+        let h = window.innerHeight;
+        canvas.width = w;
+        canvas.height = h;
+
+        // Star properties
+        const STAR_COUNT = 200;
+        const GALAXY_RADIUS = Math.min(w, h) / 2.2;
+        const CENTER_X = w / 2;
+        const CENTER_Y = h / 2;
+        let stars = [];
+
+        function randomBetween(a, b) {
+            return a + Math.random() * (b - a);
+        }
+
+        // Generate stars in a spiral galaxy pattern
+        for (let i = 0; i < STAR_COUNT; i++) {
+            let angle = randomBetween(0, 2 * Math.PI);
+            let radius = Math.pow(Math.random(), 0.7) * GALAXY_RADIUS;
+            let spiral = radius * 0.25 * Math.sin(3 * angle); // spiral arms
+            let x = CENTER_X + (radius + spiral) * Math.cos(angle);
+            let y = CENTER_Y + (radius + spiral) * Math.sin(angle);
+            let z = randomBetween(-GALAXY_RADIUS/2, GALAXY_RADIUS/2);
+            let speed = randomBetween(0.0005, 0.0015);
+            stars.push({x, y, z, angle, radius, speed, size: randomBetween(1, 2.5)});
+        }
+
+        function drawGalaxy() {
+            ctx.clearRect(0, 0, w, h);
+            // Draw faint galaxy core
+            let grad = ctx.createRadialGradient(CENTER_X, CENTER_Y, 0, CENTER_X, CENTER_Y, GALAXY_RADIUS/2);
+            grad.addColorStop(0, 'rgba(67,198,172,0.15)');
+            grad.addColorStop(1, 'rgba(0,0,0,0)');
+            ctx.beginPath();
+            ctx.arc(CENTER_X, CENTER_Y, GALAXY_RADIUS/2, 0, 2*Math.PI);
+            ctx.fillStyle = grad;
+            ctx.fill();
+
+            // Draw stars
+            for (let star of stars) {
+                // 3D rotation around center
+                star.angle += star.speed;
+                let spiral = star.radius * 0.25 * Math.sin(3 * star.angle);
+                let x = CENTER_X + (star.radius + spiral) * Math.cos(star.angle);
+                let y = CENTER_Y + (star.radius + spiral) * Math.sin(star.angle);
+
+                // Simulate depth by changing size and opacity
+                let depth = 1 - (star.z + GALAXY_RADIUS/2) / GALAXY_RADIUS;
+                ctx.beginPath();
+                ctx.arc(x, y, star.size * depth, 0, 2 * Math.PI);
+                ctx.fillStyle = `rgba(255,255,${randomBetween(200,255)},${0.7 * depth})`;
+                ctx.shadowColor = '#fff';
+                ctx.shadowBlur = 8 * depth;
+                ctx.fill();
+                ctx.shadowBlur = 0;
+            }
+        }
+
+        function animate() {
+            drawGalaxy();
+            requestAnimationFrame(animate);
+        }
+
+        animate();
+
+        // Responsive resize
+        window.addEventListener('resize', () => {
+            w = window.innerWidth;
+            h = window.innerHeight;
+            canvas.width = w;
+            canvas.height = h;
+        });
+    </script>
+</body>
+</html>
